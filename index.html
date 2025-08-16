@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>seebirdearn — Earn Hub</title>
+  <meta name="description" content="Simple earning hub with Ads, TG tasks, $ balance, Telegram login, Binance-only withdraw, daily 50 limit." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui"] },
+          colors: { brand: { DEFAULT: '#16a34a', dark: '#15803d', light: '#86efac' } },
+          boxShadow: { soft: '0 10px 30px rgba(2, 6, 23, 0.08)' }
+        }
+      },
+      darkMode: 'class'
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root { color-scheme: light dark; }
+    .glass { backdrop-filter: saturate(140%) blur(8px); }
+    .hidden-important { display:none !important; }
+  </style>
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+  <div id="app" class="min-h-screen flex flex-col">
+    <!-- Top Bar -->
+    <header class="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 glass border-b border-slate-200/70 dark:border-slate-800">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand to-emerald-600 grid place-items-center text-white font-extrabold shadow-soft">🕊️</div>
+          <div>
+            <h1 class="text-lg font-bold leading-tight">seebirdearn</h1>
+            <p class="text-xs text-slate-500" data-i18n="tagline">Earn simple tasks & ads — $ rewards</p>
+          </div>
+        </div>
+        <div class="ml-auto flex items-center gap-2">
+          <button id="langToggle" class="px-3 py-1.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800" title="Toggle English/Bangla">EN / BN</button>
+          <button id="themeToggle" class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800" title="Toggle theme">
+            <i data-lucide="moon"></i>
+          </button>
+          <button id="loginBtn" class="px-3 py-1.5 text-sm rounded-xl bg-brand hover:bg-brand-dark text-white font-semibold" data-i18n="login">Log in with Telegram</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content (locked until TG login) -->
+    <main id="lockedMain" class="flex-1 opacity-50 pointer-events-none select-none">
+      <section class="max-w-6xl mx-auto px-4 py-6 grid md:grid-cols-3 gap-4">
+        <!-- Balance Card -->
+        <div class="md:col-span-3 grid sm:grid-cols-3 gap-4">
+          <div class="rounded-2xl p-5 bg-white dark:bg-slate-900 shadow-soft">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-slate-500" data-i18n="balance">Current Balance</p>
+                <h2 class="text-3xl font-extrabold mt-1"><span id="balance">$0.000</span></h2>
+              </div>
+              <div class="text-right">
+                <p class="text-xs text-slate-500" data-i18n="lifetime">Lifetime Earned</p>
+                <p class="text-lg font-semibold" id="lifetime">$0.000</p>
+              </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <button class="px-4 py-2 rounded-xl bg-brand hover:bg-brand-dark text-white" data-nav="ads" data-i18n="earnAds">Earn from Ads</button>
+              <button class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800" data-nav="tg" data-i18n="earnTG">Earn from TG</button>
+              <button class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800" data-nav="refer" data-i18n="referFriends">Refer Friends</button>
+            </div>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="rounded-2xl p-5 bg-white dark:bg-slate-900 shadow-soft">
+            <div class="flex items-center gap-3"><i data-lucide="zap"></i><h3 class="font-semibold" data-i18n="today">Today</h3></div>
+            <p class="text-2xl font-bold mt-2" id="todayEarn">+$0.000</p>
+            <p class="text-xs text-slate-500" data-i18n="tasksDone">Tasks completed today</p>
+            <p class="text-sm font-semibold mt-1" id="todayTasks">0 / 50</p>
+          </div>
+          <div class="rounded-2xl p-5 bg-white dark:bg-slate-900 shadow-soft">
+            <div class="flex items-center gap-3"><i data-lucide="users"></i><h3 class="font-semibold" data-i18n="referrals">Referrals</h3></div>
+            <p class="text-2xl font-bold mt-2" id="refCount">0</p>
+            <p class="text-xs text-slate-500" data-i18n="refRate">20% bonus per friend</p>
+          </div>
+        </div>
+
+        <!-- Tabs / Pages -->
+        <div class="md:col-span-3">
+          <nav class="w-full rounded-2xl bg-white dark:bg-slate-900 shadow-soft p-2 flex flex-wrap gap-2 mb-4">
+            <button class="tab-btn active" data-nav="home"><i data-lucide="home"></i><span data-i18n="home">Home</span></button>
+            <button class="tab-btn" data-nav="ads"><i data-lucide="badge-dollar-sign"></i><span data-i18n="adsTask">Ads Task</span></button>
+            <button class="tab-btn" data-nav="tg"><i data-lucide="send"></i><span data-i18n="tgTask">TG Tasks</span></button>
+            <button class="tab-btn" data-nav="refer"><i data-lucide="user-plus"></i><span data-i18n="refer">Refer</span></button>
+            <button class="tab-btn" data-nav="withdraw"><i data-lucide="wallet"></i><span data-i18n="withdraw">Withdraw</span></button>
+            <button class="tab-btn" data-nav="profile"><i data-lucide="id-card"></i><span data-i18n="profile">Profile</span></button>
+          </nav>
+
+          <!-- Pages -->
+          <div id="pages" class="space-y-4">
+            <!-- Home -->
+            <section data-page="home" class="page">
+              <div class="rounded-2xl p-6 bg-white dark:bg-slate-900 shadow-soft">
+                <h3 class="text-xl font-bold mb-2" data-i18n="welcome">Welcome!</h3>
+                <p class="text-slate-600 dark:text-slate-300" data-i18n="homeIntro">Start earning by completing Ads or joining Telegram channels. Fixed reward: $0.002 per task.</p>
+              </div>
+            </section>
+
+            <!-- Ads Tasks -->
+            <section data-page="ads" class="page hidden">
+              <div class="rounded-2xl p-6 bg-white dark:bg-slate-900 shadow-soft">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-xl font-bold" data-i18n="adsHeading">Ads Tasks</h3>
+                  <div class="flex items-center gap-2">
+                    <input id="adsSearch" placeholder="Search…" class="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent" />
+                    <select id="adsSort" class="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent">
+                      <option value="reward" data-i18n="sortReward">Sort: Reward</option>
+                      <option value="new" data-i18n="sortNew">Sort: New</option>
+                    </select>
+                  </div>
+                </div>
+                <ul id="adsList" class="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-3"></ul>
+              </div>
+            </section>
+
+            <!-- TG Tasks -->
+            <section data-page="tg" class="page hidden">
+              <div class="rounded-2xl p-6 bg-white dark:bg-slate-900 shadow-soft">
+                <h3 class="text-xl font-bold" data-i18n="tgHeading">Telegram Tasks</h3>
+                <ul id="tgList" class="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-3"></ul>
+              </div>
+            </section>
+
+            <!-- Refer -->
+            <section data-page="refer" class="page hidden">
+              <div class="rounded-2xl p-6 bg-white dark:bg-slate-900 shadow-soft">
+                <h3 class="text-xl font-bold" data-i18n="referHeading">Invite Friends & Earn 20%</h3>
+                <p class="text-slate-600 dark:text-slate-300" data-i18n="referDesc">Share your link. When friends earn, you get 20% referral bonus.</p>
+                <div class="mt-3 flex gap-2">
+                  <input id="refLink" class="flex-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent" readonly />
+                  <button id="copyRef" class="px-4 py-2 rounded-xl bg-brand hover:bg-brand-dark text-white" data-i18n="copy">Copy</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Withdraw -->
+            <section data-page="withdraw" class="page hidden">
+              <div class="rounded-2xl p-6 bg-white dark:bg-slate-900 shadow-soft">
+                <h3 class="text-xl font-bold" data-i18n="withdrawHeading">Withdraw</h3>
+                <form id="withdrawForm" class="mt-4 grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-sm" data-i18n="method">Method</label>
+                    <select id="method" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent">
+                      <option value="binance">Binance ID</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="text-sm" data-i18n="account">Account / ID</label>
+                    <input id="account" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent" required />
+                  </div>
+                  <div>
+                    <label class="text-sm" data-i18n="amount">Amount ($)</label>
+                    <input id="amount" type="number" min="0.001" step="0.001" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent" required />
+                  </div>
+                  <div class="flex items-end">
+                    <button class="w-full px-4 py-2 rounded-xl bg-brand hover:bg-brand-dark text-white" data-i18n="request">Request Withdraw</button>
+                  </div>
+                </form>
+                <p class="text-xs text-slate-500 mt-2" data-i18n="withdrawNote">$ are demo credits. Payouts require your backend / Google Sheet.</p>
+                <ul id="withdrawList" class="mt-4 space-y-2"></ul>
+              </div>
+            </section>
+
+            <!-- Profile -->
+            <section data-page="profile" class="page hidden">
+              <div class="rounded-2xl p-6 bg-white dark:bg-slate-900 shadow-soft">
+                <h3 class="text-xl font-bold" data-i18n="profileHeading">Profile</h3>
+                <div class="mt-3 grid sm:grid-cols-2 gap-3">
+                  <div class="rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+                    <p class="text-sm text-slate-500" data-i18n="uid">User ID</p>
+                    <p class="font-semibold" id="uid">guest</p>
+                  </div>
+                  <div class="rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+                    <p class="text-sm text-slate-500" data-i18n="joined">Joined</p>
+                    <p class="font-semibold" id="joinedDate">—</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer Nav (Mobile) -->
+    <footer class="sticky bottom-0 z-40 md:hidden bg-white/90 dark:bg-slate-900/90 glass border-t border-slate-200/70 dark:border-slate-800">
+      <nav class="max-w-6xl mx-auto px-2 py-2 grid grid-cols-5 gap-2 text-xs">
+        <button class="mnav active" data-nav="home"><i data-lucide="home"></i><span data-i18n="home">Home</span></button>
+        <button class="mnav" data-nav="ads"><i data-lucide="badge-dollar-sign"></i><span data-i18n="adsTask">Ads</span></button>
+        <button class="mnav" data-nav="tg"><i data-lucide="send"></i><span data-i18n="tgTask">TG</span></button>
+        <button class="mnav" data-nav="refer"><i data-lucide="refer">Refer</i></button>
+        <button class="mnav" data-nav="withdraw"><i data-lucide="wallet"></i><span data-i18n="withdraw">Wallet</span></button>
+      </nav>
+    </footer>
+  </div>
+
+  <!-- Telegram WebApp SDK + Adexium -->
+  <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+  <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
+
+  <!-- App Script -->
+  <script>
+    // --- Config ---
+    const USD_PER_TASK = 0.002;
+    const DAILY_LIMIT = 50;
+    const OWNER_CHAT_ID = "7674925304"; // Replace with your chat/channel ID. Example: 123456789 or @mychannel
+
+    // Your Telegram Bot Token (provided by you)
+    const BOT_TOKEN = "7705212758:AAEHlL1L1wxoJ_L5VSlXjRL-H9INFv6rK3o";
+
+    // --- Simple Local DB ---
+    const DB = {
+      key: 'seebirdearn_db_v1',
+      load() { return JSON.parse(localStorage.getItem(this.key) || '{}'); },
+      save(data) { localStorage.setItem(this.key, JSON.stringify(data)); }
+    }
+
+    // --- I18N (EN/BN) ---
+    const I18N = {
+      langKey: 'seebirdearn_lang',
+      en: {
+        tagline: 'Earn simple tasks & ads — $ rewards',
+        login: 'Log in with Telegram', balance: 'Current Balance', lifetime: 'Lifetime Earned',
+        earnAds: 'Earn from Ads', earnTG: 'Earn from TG', referFriends: 'Refer Friends',
+        today: 'Today', tasksDone: 'Tasks completed today', referrals: 'Referrals', refRate: '20% bonus per friend',
+        home: 'Home', adsTask: 'Ads Task', tgTask: 'TG Tasks', refer: 'Refer', withdraw: 'Withdraw', profile: 'Profile',
+        welcome: 'Welcome!', homeIntro: 'Start earning by completing Ads or joining Telegram channels. Fixed reward: $0.002 per task.',
+        adsHeading: 'Ads Tasks', sortReward: 'Sort: Reward', sortNew: 'Sort: New',
+        tgHeading: 'Telegram Tasks',
+        referHeading: 'Invite Friends & Earn 20%', referDesc: 'Share your link. When friends earn, you get 20% referral bonus.', copy: 'Copy',
+        withdrawHeading: 'Withdraw', method: 'Method', account: 'Account / ID', amount: 'Amount ($)', request: 'Request Withdraw',
+        withdrawNote: '$ are demo credits. Payouts require your backend / Google Sheet.',
+        profileHeading: 'Profile', uid: 'User ID', joined: 'Joined'
+      },
+      bn: {
+        tagline: 'সাধারণ টাস্ক করে ডলার আয় করুন',
+        login: 'টেলিগ্রাম দিয়ে লগইন', balance: 'বর্তমান ব্যালান্স', lifetime: 'লাইফটাইম আয়',
+        earnAds: 'এডস থেকে আয়', earnTG: 'টেলিগ্রাম থেকে আয়', referFriends: 'রেফার করুন',
+        today: 'আজ', tasksDone: 'আজ সম্পন্ন টাস্ক', referrals: 'রেফারেল', refRate: 'প্রতি ফ্রেন্ডে ২০% বোনাস',
+        home: 'হোম', adsTask: 'এডস টাস্ক', tgTask: 'টিজি টাস্ক', refer: 'রেফার', withdraw: 'উইথড্র', profile: 'প্রোফাইল',
+        welcome: 'স্বাগতম!', homeIntro: 'এডস বা টেলিগ্রামে জয়েন করলেই আয়। প্রতিটি টাস্কে $0.002 ফিক্সড।',
+        adsHeading: 'এডস টাস্ক', sortReward: 'সাজান: রিওয়ার্ড', sortNew: 'সাজান: নতুন',
+        tgHeading: 'টেলিগ্রাম টাস্ক',
+        referHeading: 'ফ্রেন্ড ইনভাইট করুন ও ২০% আয় করুন', referDesc: 'আপনার লিংক শেয়ার করুন। ফ্রেন্ড আয় করলে আপনি ২০% বোনাস পাবেন।', copy: 'কপি',
+        withdrawHeading: 'উইথড্র', method: 'মেথড', account: 'অ্যাকাউন্ট / আইডি', amount: 'অ্যামাউন্ট ($)', request: 'উইথড্র রিকুয়েস্ট',
+        withdrawNote: 'এটি ডেমো ক্রেডিট। পেমেন্ট দিতে নিজের ব্যাকএন্ড / গুগল শিট লাগবে।',
+        profileHeading: 'প্রোফাইল', uid: 'ইউজার আইডি', joined: 'জয়েনড'
+      },
+      current() { return localStorage.getItem(this.langKey) || 'en'; },
+      set(lang) { localStorage.setItem(this.langKey, lang); this.apply(); },
+      apply() {
+        const lang = this.current();
+        const dict = this[lang];
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          if (dict[key]) el.textContent = dict[key];
+        })
+      }
+    }
+
+    // --- Seed Data ---
+    const seed = {
+      user: {
+        id: 'guest-' + Math.random().toString(36).slice(2, 8),
+        joined: new Date().toISOString(),
+        balance: 0,
+        lifetime: 0,
+        todayEarn: 0,
+        todayTasks: 0,
+        todayDate: new Date().toDateString(),
+        refs: 0,
+        hasDoneTG: false
+      },
+      ads: [
+        { id: 'ad1', title: 'Watch promo • App X', created: Date.now() - 3600e3 },
+        { id: 'ad2', title: 'Visit website • Store Y', created: Date.now() - 7200e3 },
+        { id: 'ad3', title: 'Install & open • Game Z', created: Date.now() - 1200e3 },
+        { id: 'ad4', title: 'Follow on Instagram', created: Date.now() - 300e3 },
+        { id: 'ad5', title: 'Survey • 1 min', created: Date.now() - 5000e3 }
+      ],
+      tg: [
+        { id: 'tg1', title: 'Join @seebirdearn', url: 'https://t.me/seebirdearn' },
+        { id: 'tg2', title: 'Join @seebirdearnbg', url: 'https://t.me/seebirdearnbg' }
+      ],
+      withdraws: []
+    }
+
+    // --- State ---
+    const state = (() => {
+      const saved = DB.load();
+      if (!saved.user) DB.save(seed); // first time
+      return DB.load();
+    })();
+
+    // --- Helpers ---
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    const fmtUSD = n => '$' + Number(n).toFixed(3);
+
+    function ensureTodayWindow() {
+      const today = new Date().toDateString();
+      if (state.user.todayDate !== today) {
+        state.user.todayDate = today;
+        state.user.todayTasks = 0;
+        state.user.todayEarn = 0;
+        DB.save(state);
+      }
+    }
+
+    function refreshHeader() {
+      ensureTodayWindow();
+      $('#balance').textContent = fmtUSD(state.user.balance);
+      $('#lifetime').textContent = fmtUSD(state.user.lifetime);
+      $('#todayEarn').textContent = '+' + fmtUSD(state.user.todayEarn);
+      $('#todayTasks').textContent = state.user.todayTasks + ' / ' + DAILY_LIMIT;
+      $('#refCount').textContent = state.user.refs;
+      $('#uid').textContent = state.user.id;
+      $('#joinedDate').textContent = new Date(state.user.joined).toLocaleDateString();
+    }
+
+    function renderAds(list = state.ads) {
+      const q = $('#adsSearch').value?.toLowerCase() || '';
+      const sort = $('#adsSort').value;
+      let items = list.filter(a => a.title.toLowerCase().includes(q));
+      items.sort((a,b)=> sort==='reward' ? 0 : b.created - a.created);
+      $('#adsList').innerHTML = items.map(a => `
+        <li class="rounded-xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between">
+          <div>
+            <p class="font-semibold">${a.title}</p>
+            <p class="text-sm text-slate-500 mt-1">Reward: <span class="font-semibold text-brand">${fmtUSD(USD_PER_TASK)}</span></p>
+          </div>
+          <button class="mt-3 px-3 py-2 rounded-xl bg-brand hover:bg-brand-dark text-white"
+            data-action="do-ad" data-id="${a.id}">Claim & View Ad</button>
+        </li>`).join('');
+    }
+
+    function renderTG() {
+      $('#tgList').innerHTML = state.tg.map(t => `
+        <li class="rounded-xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between">
+          <div>
+            <p class="font-semibold">${t.title}</p>
+            <p class="text-sm text-slate-500 mt-1">Reward: <span class="font-semibold text-brand">${fmtUSD(USD_PER_TASK)}</span></p>
+          </div>
+          <div class="mt-3 flex gap-2">
+            <a href="${t.url}" target="_blank" rel="noopener" class="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800">Open</a>
+            <button class="px-3 py-2 rounded-xl bg-brand hover:bg-brand-dark text-white"
+              data-action="do-tg" data-id="${t.id}">Verify & Claim</button>
+          </div>
+        </li>`).join('');
+    }
+
+    function renderWithdraws() {
+      const list = state.withdraws.map(w => `
+        <li class="rounded-xl border border-slate-200 dark:border-slate-800 p-4 flex items-center justify-between">
+          <div>
+            <p class="font-semibold">${w.method.toUpperCase()} • ${w.account}</p>
+            <p class="text-sm text-slate-500">${new Date(w.time).toLocaleString()}</p>
+          </div>
+          <span class="px-3 py-1 rounded-full text-xs ${w.status==='pending' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'}">${w.status}</span>
+        </li>`).join('');
+      $('#withdrawList').innerHTML = list || '';
+    }
+
+    function updateRefLink() {
+      const link = location.origin + location.pathname + '#ref=' + state.user.id;
+      $('#refLink').value = link;
+    }
+
+    // --- Adexium: show ad, then reward ---
+    let adexWidget = null;
+    function initAdexium() {
+      try {
+        adexWidget = new AdexiumWidget({wid: 'db0209ee-759e-4a42-a364-fd6e7a881f84', adFormat: 'interstitial'});
+        adexWidget.autoMode(); // fallback auto
+      } catch(e) {
+        console.warn('Adexium init error', e);
+      }
+    }
+    function showAdThen(cb) {
+      try {
+        if (adexWidget && typeof adexWidget.show === 'function') {
+          adexWidget.show();
+          // credit after a short delay (widget has no public close event in this minimal embed)
+          setTimeout(cb, 3000);
+          return;
+        }
+      } catch(e){}
+      // fallback
+      setTimeout(cb, 1500);
+    }
+
+    // --- Telegram Login Lock ---
+    const tg = window.Telegram?.WebApp;
+    function lockUI(locked) {
+      const main = document.getElementById('lockedMain');
+      if (locked) {
+        main.classList.add('opacity-50','pointer-events-none','select-none');
+      } else {
+        main.classList.remove('opacity-50','pointer-events-none','select-none');
+      }
+    }
+
+    function loginWithTelegram() {
+      if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        const user = tg.initDataUnsafe.user;
+        state.user.id = "tg" + user.id;
+        if (!state.user.joined) state.user.joined = new Date().toISOString();
+        DB.save(state);
+        refreshHeader();
+        lockUI(false);
+        $('#loginBtn').classList.add('hidden-important');
+        try { tg.ready(); tg.expand(); } catch(e){}
+        alert("Logged in as " + (user.first_name || "TG user"));
+      } else {
+        alert("Please open this page inside Telegram app to log in.");
+      }
+    }
+
+    // --- Actions ---
+    document.addEventListener('click', (e) => {
+      const nav = e.target.closest('[data-nav]');
+      if (nav) {
+        const id = nav.getAttribute('data-nav');
+        $$('.tab-btn, .mnav').forEach(b => b.classList.toggle('active', b.getAttribute('data-nav')===id));
+        $$('.page').forEach(p => p.classList.toggle('hidden', p.getAttribute('data-page')!==id));
+        return;
+      }
+      const act = e.target.closest('[data-action]');
+      if (act && act.dataset.action === 'do-ad') {
+        ensureTodayWindow();
+        if (state.user.todayTasks >= DAILY_LIMIT) {
+          alert("Daily limit (" + DAILY_LIMIT + ") reached!");
+          return;
+        }
+        // Show ad first, then credit
+        showAdThen(() => {
+          state.user.balance += USD_PER_TASK;
+          state.user.lifetime += USD_PER_TASK;
+          state.user.todayEarn += USD_PER_TASK;
+          state.user.todayTasks += 1;
+          DB.save(state);
+          refreshHeader();
+          act.textContent = 'Claimed ✔';
+          act.disabled = true;
+        });
+      }
+      if (act && act.dataset.action === 'do-tg') {
+        ensureTodayWindow();
+        if (state.user.todayTasks >= DAILY_LIMIT) {
+          alert("Daily limit (" + DAILY_LIMIT + ") reached!");
+          return;
+        }
+        // We can't really verify join on pure frontend; mark as done for UX.
+        state.user.balance += USD_PER_TASK;
+        state.user.lifetime += USD_PER_TASK;
+        state.user.todayEarn += USD_PER_TASK;
+        state.user.todayTasks += 1;
+        state.user.hasDoneTG = true;
+        DB.save(state);
+        refreshHeader();
+        act.textContent = 'Verified ✔';
+        act.disabled = true;
+      }
+      if (e.target.id === 'copyRef') {
+        navigator.clipboard.writeText($('#refLink').value);
+        e.target.textContent = 'Copied!';
+        setTimeout(()=> e.target.textContent = (I18N.current()==='bn' ? 'কপি' : 'Copy'), 1200);
+      }
+      if (e.target.id === 'themeToggle') {
+        document.documentElement.classList.toggle('dark');
+        const isDark = document.documentElement.classList.contains('dark');
+        localStorage.setItem('seebirdearn_theme', isDark ? 'dark' : 'light');
+      }
+      if (e.target.id === 'loginBtn') {
+        loginWithTelegram();
+      }
+    });
+
+    $('#adsSearch').addEventListener('input', () => renderAds());
+    $('#adsSort').addEventListener('change', () => renderAds());
+
+    $('#withdrawForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      // Must have completed at least one TG task
+      if (!state.user.hasDoneTG) {
+        alert("You must complete a Telegram join task first!");
+        return;
+      }
+      ensureTodayWindow();
+
+      const amount = Number($('#amount').value);
+      if (amount <= 0 || amount > state.user.balance) {
+        alert('Invalid amount.');
+        return;
+      }
+
+      const w = {
+        method: "binance",
+        account: $('#account').value.trim(),
+        amount,
+        status: 'pending',
+        time: Date.now()
+      };
+
+      state.user.balance -= amount;
+      state.withdraws.unshift(w);
+      DB.save(state);
+      refreshHeader();
+      renderWithdraws();
+      e.target.reset();
+
+      // Send to Telegram owner/admin
+      const msg = [
+        "💵 New Withdraw Request",
+        "👤 User: " + state.user.id,
+        "📅 Date: " + new Date(w.time).toLocaleString(),
+        "💳 Binance ID: " + w.account,
+        "💰 Amount: $" + w.amount.toFixed(3)
+      ].join("\\n");
+
+      if (BOT_TOKEN && OWNER_CHAT_ID) {
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${encodeURIComponent(OWNER_CHAT_ID)}&text=${encodeURIComponent(msg)}`);
+      }
+
+      alert('Withdraw request submitted!');
+    });
+
+    // Language toggle
+    $('#langToggle').addEventListener('click', () => {
+      const next = I18N.current() === 'en' ? 'bn' : 'en';
+      I18N.set(next);
+      $('#adsSearch').setAttribute('placeholder', next==='bn' ? 'সার্চ…' : 'Search…');
+      renderAds();
+    });
+
+    // On load
+    (function init(){
+      // Icons
+      lucide.createIcons();
+      // Theme
+      const t = localStorage.getItem('seebirdearn_theme');
+      if (t === 'dark') document.documentElement.classList.add('dark');
+      // I18N
+      I18N.apply();
+      // State -> UI
+      refreshHeader();
+      renderAds();
+      renderTG();
+      renderWithdraws();
+      updateRefLink();
+      // Adexium init
+      initAdexium();
+      // Lock until TG login
+      lockUI(true);
+    })();
+
+    // Styles for buttons
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnStyle = 'px-3 py-2 rounded-xl flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm';
+      $$('.tab-btn').forEach(b => b.classList.add(...btnStyle.split(' ')));
+      $$('.mnav').forEach(b => b.classList.add('flex','flex-col','items-center','gap-1','py-1.5','rounded-xl','hover:bg-slate-100','dark:hover:bg-slate-800'));
+    });
+  </script>
+</body>
+</html>
