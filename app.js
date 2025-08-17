@@ -4,7 +4,7 @@
   const $ = sel => document.querySelector(sel);
   const $$ = sel => Array.from(document.querySelectorAll(sel));
 
-  const CONFIG = window.APP_CONFIG || { TASKS_PER_DAY:50, REWARD_PER_TASK:0.002, MIN_WITHDRAW:1.0, BOT_TOKEN:'', ADMIN_ID:'' };
+  const CONFIG = window.APP_CONFIG || { TASKS_PER_DAY:120, REWARD_PER_TASK:0.002, MIN_WITHDRAW:1.0, BOT_TOKEN:'', ADMIN_ID:'' };
 
   const store = {
     get(k, def){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; }catch(e){ return def; } },
