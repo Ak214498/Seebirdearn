@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Seebirdearn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Ad SDK -->
+  <script src='//libtl.com/sdk.js' data-zone='9722437' data-sdk='show_9722437'></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="avatar.png" alt="logo" class="logo">
+      <div>
+        <div class="brand-title">Seebirdearn</div>
+        <div class="brand-sub">Earn rewards, withdraw fast</div>
+      </div>
+    </div>
+    <nav class="top-actions">
+      <button id="btn-profile" class="icon-btn" title="Profile">Profile</button>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="side-menu">
+        <li class="side-item active" data-tab="home">Home</li>
+        <li class="side-item" data-tab="earn">Earn</li>
+        <li class="side-item" data-tab="withdraw">Withdraw</li>
+        <li class="side-item" data-tab="profile">Profile</li>
+      </ul>
+      <div class="ref-box-small">
+        <small>Referral bot</small>
+        <a href="https://t.me/Seebirdearn_bot" target="_blank">@Seebirdearn_bot</a>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section id="page-home" class="page visible">
+        <div class="grid">
+          <div class="card profile-card">
+            <div class="profile-left">
+              <img id="avatarImg" src="avatar.png" class="avatar-lg" alt="avatar">
+              <div>
+                <div id="displayName" class="name">Guest</div>
+                <div class="muted" id="pId">ID: —</div>
+              </div>
+            </div>
+            <div class="balance-block">
+              <div class="balance-label">Balance</div>
+              <div id="balanceValue" class="balance-amount">$0.00</div>
+              <div class="muted small">Withdraw minimum: $<span id="minWithdraw">1.00</span></div>
+            </div>
+          </div>
+
+          <div class="card tasks-card">
+            <h3>Daily Tasks</h3>
+            <div class="task-stats">
+              <div><span>Per day</span><b id="totalTasks">50</b></div>
+              <div><span>Completed</span><b id="completedTasks">0</b></div>
+              <div><span>Remaining</span><b id="remainingTasks">50</b></div>
+            </div>
+            <div class="card-actions">
+              <button id="startEarningBtn" class="btn primary large">Start Earning</button>
+              <button id="earnNow" class="btn secondary">Earn Now (Quick)</button>
+            </div>
+            <div id="earnStatus" class="muted small"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-earn" class="page">
+        <div class="card">
+          <h3>Earn</h3>
+          <p class="muted">Watch rewarded ads to earn balance.</p>
+          <div class="center">
+            <button id="earnNow2" class="btn primary large">Watch Ad & Earn</button>
+            <div id="earnStatus2" class="muted small"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-withdraw" class="page">
+        <div class="card">
+          <h3>Withdraw</h3>
+          <form id="withdrawForm" class="form">
+            <label>Method</label>
+            <select id="method" class="input" required>
+              <option value="Binance USDT (TRX20)">Binance USDT (TRX20)</option>
+              <option value="Payeer USD">Payeer (USD)</option>
+            </select>
+            <label>Address / Account</label>
+            <input id="address" class="input" placeholder="TRX20 wallet or Payeer account" required />
+            <label>Amount (USD)</label>
+            <input id="amount" class="input" type="number" step="0.01" min="1" placeholder=">= 1.00" required />
+            <div class="form-actions">
+              <button class="btn primary" type="submit">Send Withdraw Request</button>
+            </div>
+            <div id="withdrawMsg" class="muted small"></div>
+          </form>
+          <div class="divider"></div>
+          <h4>History</h4>
+          <div id="history" class="history-list"></div>
+        </div>
+      </section>
+
+      <section id="page-profile" class="page">
+        <div class="card">
+          <h3>Profile</h3>
+          <div class="profile-grid">
+            <div><strong>Name</strong><div id="nameVal">Guest</div></div>
+            <div><strong>Username</strong><div id="usernameVal">—</div></div>
+            <div><strong>TG ID</strong><div id="tgIdVal">—</div></div>
+            <div><strong>Referral</strong>
+              <div class="ref-row">
+                <input id="refLink" class="input" readonly />
+                <button id="copyRef" class="btn secondary">Copy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    window.APP_CONFIG = {
+      TASKS_PER_DAY: 50,
+      REWARD_PER_TASK: 0.009,
+      MIN_WITHDRAW: 1.0,
+      BOT_TOKEN: "7705212758:AAFOCelJ3S9E6ihgn_F3ZAzjJwbOrfnLH4s",
+      ADMIN_ID: "7674925304"
+    };
+  </script>
+
+  <script src="app.js"></script>
+</body>
+</html>
